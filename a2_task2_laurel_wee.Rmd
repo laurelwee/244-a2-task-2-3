@@ -73,6 +73,11 @@ palmetto_blr_tidy
 ```
 ### Part 3
 ```{r}
+palmetto_blr_fitted <- palmetto_blr %>% 
+  broom::augment(type.predict = "response") %>% 
+  mutate(correct = case_when(.fitted >= .50))
 
+palmetto_blr_correct <-- palmetto_blr_fitted %>% 
+  pivot_wider(names_from = species_full,values_from = correct) 
 ```
 
