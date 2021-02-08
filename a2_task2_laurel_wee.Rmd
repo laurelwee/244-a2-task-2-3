@@ -18,8 +18,8 @@ palmetto <- read_csv(here("data","palmetto.csv")) %>%
     species %in% "2"~"Sabal etonia"))
   
 ```
-
-```{r}
+### Part 1 
+```{r, part_i}
 #Make a subset of data including heigh, canopy length, canopy width, and green leaves for species Serenoa repens and Sabal etonia
 
 classify_palmetto <- palmetto %>% 
@@ -58,7 +58,21 @@ autoplot(palmetto_pca,
          loadings.color= black, 
          loadings.label= TRUE)
 ```
+### Part 2
+
+```{r, part_ii}
+palmetto_blr <- glm(species_full ~ height+length+width+green_lvs,
+                    data = classify_palmetto,
+                    family = "binomial")
+palmetto_blr
+summary(palmetto_blr)
+palmetto_blr_tidy <- broom::tidy(palmetto_blr)
+palmetto_blr_tidy
+
+
+```
+### Part 3
 ```{r}
-palmetto_blr <-
+
 ```
 
