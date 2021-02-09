@@ -11,6 +11,7 @@ library(tidyverse)
 library(tidytuesdayR)
 library(tsibble)
 library(gganimate)
+library(gifski)
 ```
 ```{r}
 tuesdata <- tidytuesdayR::tt_load(2021, week = 5)
@@ -38,8 +39,13 @@ volunteers_event <-plastics %>%
   slice_max(avg_vol_per_event, n=5)
 ```
 ```{r}
-ggplot(plastic_top5) +
+top5_plastic_plot <- ggplot(plastic_top5) +
   geom_col(aes(x=rank, y=total_count, fill=country))+
-  transition_time(year)
+  transition_time(year)+
+  transition_states(year,transition_length = 2, state_length = 2)+
+  ease_aes("linear") +
+  enter_fade() +
+  exit_fade()
+anim_save("top5_plastic_animation.gif", top5_plastic_plot)
 ```
 
