@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(ggfortify)
+library(patchwork)
 ```
 ```{r, message=FALSE, warning=FALSE}
 palmetto <- read_csv(here("data","palmetto.csv")) %>% 
@@ -30,17 +31,16 @@ classify_palmetto <- palmetto %>%
 
 
 ```{r}
-ggplot(classify_palmetto, aes(x = height, y = length)) +
+plot1 <- ggplot(classify_palmetto, aes(x = height, y = length, color= species_full)) +
   geom_point() +
-  facet_wrap(~species_full)
+  facet_wrap(~species_full)+
+  theme(legend.position = "none")
 
-ggplot(classify_palmetto, aes(x = height, y = green_lvs)) +
+plot2 <- ggplot(classify_palmetto, aes(x = height, y = green_lvs, color= species_full)) +
   geom_point() +
-  facet_wrap(~species_full)
+  facet_wrap(~species_full)+
+  theme(legend.position = "none")
 
-ggplot(classify_palmetto, aes(x = width, y = length)) +
-  geom_point() +
-  facet_wrap(~species_full)
 ```
 
 
@@ -51,12 +51,17 @@ palmetto_pca <- classify_palmetto %>%
   scale() %>% 
   prcomp()
 
-autoplot(palmetto_pca, 
+pca_plot <- autoplot(palmetto_pca, 
          data = classify_palmetto, 
          colour='species_full', 
          loadings=TRUE,
-         loadings.color= black, 
-         loadings.label= TRUE)
+         loadings.colour= 'black', 
+         loadings.label= TRUE,
+         loadings.label.colour= 'black')+
+  theme(legend.title = element_blank())
+
+combined_plot <- (plot1|plot2)/pca_plot
+combined_plot
 ```
 ### Part 2
 
@@ -75,9 +80,16 @@ palmetto_blr_tidy
 ```{r}
 palmetto_blr_fitted <- palmetto_blr %>% 
   broom::augment(type.predict = "response") %>% 
-  mutate(correct = case_when(.fitted >= .50))
+  select(species_full, .fitted) %>% 
+  mutate(predicted = case_when(.fitted >= .50 ~ "	
+Serenoa repens",.fitted <.50 ~ "Sabal etonia")) %>% 
+  mutate(correct = case_when(species_full == predicted ~ "yes", TRUE ~"no"))
 
-palmetto_blr_correct <-- palmetto_blr_fitted %>% 
-  pivot_wider(names_from = species_full,values_from = correct) 
+palmetto_blr_correct <- palmetto_blr_fitted %>% 
+  pivot_wider(names_from = species_full,values_from = predicted) 
 ```
+
+### Data source: 
+
+Abrahamson, W.G. 2019. Survival, growth and biomass estimates of two dominant palmetto species of south-central Florida from 1981 - 2017, ongoing at 5-year intervals ver 1. Environmental Data Initiative. https://doi.org/10.6073/pasta/f2f96ec76fbbd4b9db431c79a770c4d5
 

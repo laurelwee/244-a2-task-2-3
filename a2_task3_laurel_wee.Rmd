@@ -1,0 +1,45 @@
+---
+title: "Tidy TuesdAY Plastic data wrangling"
+author: "Laurel Wee"
+date: "2/8/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tidytuesdayR)
+library(tsibble)
+library(gganimate)
+```
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 5)
+```
+
+
+```{r}
+plastics <- tuesdata$plastics 
+plastic_top5<- plastics%>% 
+  select(country, year, parent_company, grand_total) %>% 
+  filter(parent_company != "Grand Total", country != "EMPTY") %>% 
+  group_by(country, year) %>% 
+  summarize(total_count = sum(grand_total, na.rm = TRUE)) %>% 
+  group_by(year) %>% 
+  mutate(rank = rank(-total_count)) %>% 
+  arrange(-total_count) %>% 
+  slice_max(total_count, n=5)
+  
+volunteers_event <-plastics %>% 
+  select(country, year, volunteers, num_events) %>% 
+  mutate(vol_per_event = volunteers/num_events) %>% 
+  group_by(country) %>% 
+  summarize(avg_vol_per_event= mean(vol_per_event)) %>% 
+  arrange(-avg_vol_per_event) %>% 
+  slice_max(avg_vol_per_event, n=5)
+```
+```{r}
+ggplot(plastic_top5) +
+  geom_col(aes(x=rank, y=total_count, fill=country))+
+  transition_time(year)
+```
+
